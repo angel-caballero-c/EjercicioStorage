@@ -130,25 +130,21 @@ window.addEventListener("load", function (event) {
 });
 
 document.getElementById('btnClear').addEventListener('click', function (event) {
-    // Limpiar la tabla
+
     document.querySelector('#tablaListaCompras tbody').innerHTML = '';
 
-    // Reiniciar variables globales
     cont = 0;
     costoTotal = 0;
     totalEnProductos = 0;
     datos = [];
 
-    // Actualizar HTML del resumen
     document.getElementById('productosTotal').innerText = '0';
     document.getElementById('precioTotal').innerText = '$ 0.00';
     document.getElementById('contadorProductos').innerText = '0';
 
-    // Limpiar localStorage
     localStorage.removeItem('resumen');
     localStorage.removeItem('datos');
 
-    // Resetear campos del formulario
     document.getElementById('Name').value = '';
     document.getElementById('Number').value = '';
 });
