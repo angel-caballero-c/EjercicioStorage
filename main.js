@@ -14,33 +14,29 @@ const precioTotal = document.getElementById("precioTotal");
 let cont = 0;
 let costoTotal = 0;
 let totalEnProductos = 0;
-
+let datos = new Array(); // Almacena los elementos de la tabla
 
 function validarCantidad() {
-    if (txtNumber.value.trim().length <= 0){
+    if (txtNumber.value.trim().length <= 0) {
         return false;
     }
-
-    if(isNaN(txtNumber.value)){
+    if (isNaN(txtNumber.value)) {
         return false;
     }
-
-    if(Number(txtNumber.value) <=  0){
+    if (Number(txtNumber.value) <= 0) {
         return false;
     }
     return true;
-} // validadCantidad
+}
 
-function getPrecio(){
-    return Math.round(Math.random() * 10000) / 100
-} //getPrecio
+function getPrecio() {
+    return Math.round(Math.random() * 10000) / 100;
+}
 
-btnAgregar.addEventListener("click", function(event) {
+btnAgregar.addEventListener("click", function (event) {
     event.preventDefault();
 
-    // Premite agregar los datos a la tabla
     let isValid = true;
-
 
     alertValidacionesTexto.innerHTML = "";
     alertValidaciones.style.display = "none";
@@ -48,7 +44,7 @@ btnAgregar.addEventListener("click", function(event) {
     txtNumber.style.border = "";
 
     txtName.value = txtName.value.trim();
-    txtNumber.value = txtNumber.value.trim(); // 
+    txtNumber.value = txtNumber.value.trim();
 
     if (txtName.value.length < 3) {
         txtName.style.border = "solid medium red";
@@ -64,26 +60,96 @@ btnAgregar.addEventListener("click", function(event) {
         isValid = false;
     }
 
-    if (isValid){
+    if (isValid) {
         cont++;
         let precio = getPrecio();
         let row = `<tr>
-        <td>${cont}</cont>
+        <td>${cont}</td>
         <td>${txtName.value}</td>
         <td>${txtNumber.value}</td>
         <td>${precio}</td>
         </tr>`;
+
+        let elemento = {
+            "cont": cont,
+            "nombre": txtName.value,
+            "cantidad": txtNumber.value,
+            "precio": precio
+        };
+        datos.push(elemento);
+        localStorage.setItem("datos", JSON.stringify(datos));
+
         cuerpoTabla.insertAdjacentHTML("beforeend", row);
+
         costoTotal += precio * Number(txtNumber.value);
         precioTotal.innerText = "$ " + costoTotal.toFixed(2);
         totalEnProductos += Number(txtNumber.value);
-        productosTotal.innerText = Math.ceil(totalEnProductos);        
+        productosTotal.innerText = Math.ceil(totalEnProductos);
         contadorProductos.innerText = cont;
+
+        // Guardar resumen en localStorage
+        let resumen = {
+            "cont": cont,
+            "totalEnProductos": totalEnProductos,
+            "costoTotal": costoTotal
+        };
+        localStorage.setItem("resumen", JSON.stringify(resumen));
 
         txtName.value = "";
         txtNumber.value = "";
         txtName.focus();
-
-        contadorProductos.innerText = cont;
-    } // if isValid
+    }
 });
+
+window.addEventListener("load", function (event) {
+    event.preventDefault();
+
+    if (this.localStorage.getItem("datos") != null) {
+        datos = JSON.parse(this.localStorage.getItem("datos"));
+        datos.forEach((d) => {
+            let row = `<tr>
+                <td>${d.cont}</td>
+                <td>${d.nombre}</td>
+                <td>${d.cantidad}</td>
+                <td>${d.precio}</td>
+            </tr>`;
+            cuerpoTabla.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    if (this.localStorage.getItem("resumen") != null) {
+        let resumen = JSON.parse(this.localStorage.getItem("resumen"));
+        costoTotal = resumen.costoTotal;
+        totalEnProductos = resumen.totalEnProductos;
+        cont = resumen.cont;
+    }
+
+    precioTotal.innerText = "$ " + costoTotal.toFixed(2);
+    productosTotal.innerText = totalEnProductos;
+    contadorProductos.innerText = cont;
+});
+
+document.getElementById('btnClear').addEventListener('click', function (event) {
+    // Limpiar la tabla
+    document.querySelector('#tablaListaCompras tbody').innerHTML = '';
+
+    // Reiniciar variables globales
+    cont = 0;
+    costoTotal = 0;
+    totalEnProductos = 0;
+    datos = [];
+
+    // Actualizar HTML del resumen
+    document.getElementById('productosTotal').innerText = '0';
+    document.getElementById('precioTotal').innerText = '$ 0.00';
+    document.getElementById('contadorProductos').innerText = '0';
+
+    // Limpiar localStorage
+    localStorage.removeItem('resumen');
+    localStorage.removeItem('datos');
+
+    // Resetear campos del formulario
+    document.getElementById('Name').value = '';
+    document.getElementById('Number').value = '';
+});
+
